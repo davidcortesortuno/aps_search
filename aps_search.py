@@ -11,6 +11,17 @@ parser.add_argument('-kw', '--keyword', help='Search keyword',
 # Parser arguments
 args = parser.parse_args()
 
+
+# -----------------------------------------------------------------------------
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
 # -----------------------------------------------------------------------------
 
 url = ('http://journals.aps.org/search/'
@@ -39,11 +50,12 @@ results = [r'{"actions":' + r.rstrip(',') for r in results]
 results = [json.loads(r) for r in results]
 
 for r in results:
-    print('{:<11} {:<}'.format(r['date'], r['title']))
+    print('{:<11} {:<}'.format(bcolors.OKBLUE + r['date'] + bcolors.ENDC,
+                               r['title']))
     print('{:<11} {:<}'.format('', r['authors']))
-    print('{:<11} {:<}'.format('', r['journal']))
+    print('{:<11} {:<}'.format('', bcolors.OKGREEN + r['journal'] + bcolors.ENDC))
     print('{:<11} {:<}'.format('',
-                               'http://http://journals.aps.org/' +
+                               'http://journals.aps.org/' +
                                r['actions']['pdf']['link']
                                )
           )
