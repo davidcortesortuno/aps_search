@@ -2,6 +2,9 @@ import urllib.request
 from bs4 import BeautifulSoup
 import json
 import argparse
+import libsbml
+import sys
+import re
 
 parser = argparse.ArgumentParser(description='PRB Journal Search')
 
@@ -48,6 +51,17 @@ results[-1] = results[-1].split('"facets"')[0][:-2]
 results = [r'{"actions":' + r.rstrip(',') for r in results]
 
 results = [json.loads(r) for r in results]
+
+# title = re.sub(r'span class="aps-inline-formula"', 
+#                "?xml version='1.0' encoding='UTF-8'?",
+#                results[0]['title'])
+title = "<?xml version='1.0' encoding='UTF-8'?><math xmlns='http://www.w3.org/1998/Math/MathML'><mrow><mi>S</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac></mrow></math>"
+print(title)
+print(libsbml.formulaToString(libsbml.readMathMLFromString(title)))
+# titles = [libsbml.formulaToString(libsbml.readMathMLFromString(r['title']))
+#           for r in results]
+# print(titles)
+sys.exit(1)
 
 for r in results:
     print('{:<11} {:<}'.format(bcolors.OKBLUE + r['date'] + bcolors.ENDC,
