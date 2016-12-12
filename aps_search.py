@@ -2,6 +2,7 @@ import urllib.request
 from bs4 import BeautifulSoup
 import json
 import argparse
+import re
 
 parser = argparse.ArgumentParser(description='PRB Journal Search')
 
@@ -48,6 +49,9 @@ results[-1] = results[-1].split('"facets"')[0][:-2]
 results = [r'{"actions":' + r.rstrip(',') for r in results]
 
 results = [json.loads(r) for r in results]
+
+for r in results:
+    r['title'] = re.sub(r'<[^>]*>', '', r['title'])
 
 for r in results:
     print('{:<11} {:<}'.format(bcolors.OKBLUE + r['date'] + bcolors.ENDC,
