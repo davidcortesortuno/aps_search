@@ -29,46 +29,52 @@ class bcolors:
 
 # -----------------------------------------------------------------------------
 
-url = ('http://journals.aps.org/search/'
-       'results?page=1&date=&sort=recent&per_page=20'
-       '&start_date=&end_date=&clauses=%5B%7B%22operator%22:'
-       '%22AND%22,%22field%22:%22all%22,%22value%22:'
-       '%22{0}%22%7D%5D#title').format(args.keyword)
+class APSSearch(object):
 
-response = urllib.request.urlopen(url)
-html = response.read()
+    def __init__(self, keyword, pages, n_results=10):
 
-soup = BeautifulSoup(html, "lxml")
+        self.url = ('http://journals.aps.org/search/'
+                    'results?page=2&date=&sort=recent&per_page=20'
+                    '&start_date=&end_date=&clauses=%5B%7B%22operator%22:'
+                    '%22AND%22,%22field%22:%22all%22,%22value%22:'
+                    '%22{0}%22%7D%5D#title').format(args.keyword)
 
-# Search for contents in the tags <script>...</script>
-# From the APS results, the latest <script> is the one we need, which
-# is called window.results = ...
-results = soup.find_all('script')[-1]
+    def get_results(self):
+        response = urllib.request.urlopen(self.url)
+        html = response.read()
 
-# Now split the results. Every different result starts with
-# an "action:" string, thus we separate the whole text by this pattern
-# The 0th element is irrelevant, it contains the window.results string
-results = results.text.split(r'{"actions":')[1:]
-results[-1] = results[-1].split('"facets"')[0][:-2]
-results = [r'{"actions":' + r.rstrip(',') for r in results]
+        soup = BeautifulSoup(html, "lxml")
 
-results = [json.loads(r) for r in results]
+        # Search for contents in the tags <script>...</script>
+        # From the APS results, the latest <script> is the one we need, which
+        # is called window.results = ...
+        self.results = soup.find_all('script')[-1]
 
-for r in results:
-    r['title'] = re.sub(r'<[^>]*>', '', r['title'])
-    r['title'] = bcolors.BOLD + r['title'] + bcolors.ENDC
-    r['title'] = tw.fill(r['title'], NWRAP).replace('\n', '\n' + ' ' * 13)
+        # Now split the results. Every different result starts with
+        # an "action:" string, thus we separate the whole text by this pattern
+        # The 0th element is irrelevant, it contains the window.results string
+        results = results.text.split(r'{"actions":')[1:]
+        results[-1] = results[-1].split('"facets"')[0][:-2]
+        results = [r'{"actions":' + r.rstrip(',') for r in results]
 
-    r['authors'] = tw.fill(r['authors'], NWRAP).replace('\n', '\n' + ' ' * 13)
+        results = [json.loads(r) for r in results]
 
-for r in results:
-    print('{:<21} {:<}'.format(bcolors.OKBLUE + r['date'] + bcolors.ENDC,
-                               r['title']))
-    print('{:<12} {:<}'.format('', r['authors']))
-    print('{:<12} {:<}'.format('', bcolors.OKGREEN + r['journal'] + bcolors.ENDC))
-    print('{:<12} {:<}'.format('',
-                               'http://journals.aps.org/' +
-                               r['actions']['pdf']['link']
-                               )
-          )
-    print('-' * 80)
+    def print_results(self):
+        for r in results:
+            r['title'] = re.sub(r'<[^>]*>', '', r['title'])
+            r['title'] = bcolors.BOLD + r['title'] + bcolors.ENDC
+            r['title'] = tw.fill(r['title'], NWRAP).replace('\n', '\n' + ' ' * 13)
+
+            r['authors'] = tw.fill(r['authors'], NWRAP).replace('\n', '\n' + ' ' * 13)
+
+        for r in results:
+            print('{:<21} {:<}'.format(bcolors.OKBLUE + r['date'] + bcolors.ENDC,
+                                       r['title']))
+            print('{:<12} {:<}'.format('', r['authors']))
+            print('{:<12} {:<}'.format('', bcolors.OKGREEN + r['journal'] + bcolors.ENDC))
+            print('{:<12} {:<}'.format('',
+                                       'http://journals.aps.org/' +
+                                       r['actions']['pdf']['link']
+                                       )
+                  )
+            print('-' * 80)
