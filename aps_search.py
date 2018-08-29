@@ -4,13 +4,20 @@ import json
 import argparse
 import re
 import textwrap as tw
+import datetime
+
 
 NWRAP = 68
 
-parser = argparse.ArgumentParser(description='PRB Journal Search')
+parser = argparse.ArgumentParser(description='APS Journal Search')
 
 parser.add_argument('-kw', '--keyword', help='Search keyword',
                     default='skyrmion')
+
+parser.add_argument('-d', '--date', help='Show results for specific date')
+
+parser.add_argument('--today', help='Show results for today based on daytime',
+                    action='store_true')
 
 # Parser arguments
 args = parser.parse_args()
@@ -27,7 +34,9 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
 
+
 # -----------------------------------------------------------------------------
+
 
 url = ('http://journals.aps.org/search/'
        'results?page=1&date=&sort=recent&per_page=20'
@@ -61,7 +70,17 @@ for r in results:
 
     r['authors'] = tw.fill(r['authors'], NWRAP).replace('\n', '\n' + ' ' * 13)
 
+# Set today as date in case argument was passed
+if args.today:
+    d = datetime.date.today()
+    args.date = '{}-{:02d}-{:02d}'.format(d.year, d.month, d.day)
+
 for r in results:
+
+    if args.date:
+        if r['date'] != args.date:
+            continue
+
     print('{:<21} {:<}'.format(bcolors.OKBLUE + r['date'] + bcolors.ENDC,
                                r['title']))
     print('{:<12} {:<}'.format('', r['authors']))
