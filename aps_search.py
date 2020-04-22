@@ -57,7 +57,7 @@ results = soup.find_all('script')[-1]
 # Now split the results. Every different result starts with
 # an "action:" string, thus we separate the whole text by this pattern
 # The 0th element is irrelevant, it contains the window.results string
-results = results.text.split(r'{"actions":')[1:]
+results = results.string.split(r'{"actions":')[1:]
 results[-1] = results[-1].split('"facets"')[0][:-2]
 results = [r'{"actions":' + r.rstrip(',') for r in results]
 
@@ -75,7 +75,7 @@ if args.today:
     d = datetime.date.today()
     args.date = '{}-{:02d}-{:02d}'.format(d.year, d.month, d.day)
 
-for r in results:
+for r in results[-1::-1]:
 
     if args.date:
         if r['date'] != args.date:
